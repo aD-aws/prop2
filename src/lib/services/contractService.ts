@@ -22,6 +22,12 @@ export class ContractService {
     builderId: string
   ): Promise<Contract> {
     try {
+      // Get project to access project type
+      const project = await this.getProject(projectId);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
       // Get agreed terms and conditions for the project
       const projectTerms = await termsConditionsService.getProjectTerms(projectId);
       
@@ -30,7 +36,7 @@ export class ContractService {
       }
 
       // Get appropriate contract template based on project type
-      const template = await this.getContractTemplate(sowDocument.projectType);
+      const template = await this.getContractTemplate(project.projectType);
       
       // Generate contract content with agreed terms
       const contractContent = await this.generateContractContent(
@@ -38,6 +44,7 @@ export class ContractService {
         sowDocument,
         selectedQuote,
         projectId,
+        project.projectType,
         projectTerms
       );
 
@@ -112,6 +119,7 @@ export class ContractService {
     sowDocument: SoWDocument,
     quote: Quote,
     projectId: string,
+    projectType: string,
     projectTerms?: ProjectTerms
   ): Promise<string> {
     let content = template.content;
@@ -119,7 +127,7 @@ export class ContractService {
     // Replace placeholders with actual data
     const replacements = {
       '{{PROJECT_ID}}': projectId,
-      '{{PROJECT_TYPE}}': sowDocument.projectType,
+      '{{PROJECT_TYPE}}': projectType,
       '{{TOTAL_AMOUNT}}': `£${quote.pricing.totalAmount.toLocaleString()}`,
       '{{LABOR_COSTS}}': `£${quote.pricing.laborCosts.toLocaleString()}`,
       '{{MATERIAL_COSTS}}': `£${quote.pricing.materialCosts.toLocaleString()}`,
@@ -194,6 +202,23 @@ export class ContractService {
       return response.Item as Contract || null;
     } catch (error) {
       console.error('Error fetching contract:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get project by ID
+   */
+  private async getProject(projectId: string): Promise<Project | null> {
+    try {
+      const response = await this.dynamoClient.send(new GetCommand({
+        TableName: 'Projects',
+        Key: { id: projectId }
+      }));
+      
+      return response.Item as Project || null;
+    } catch (error) {
+      console.error('Error fetching project:', error);
       return null;
     }
   }

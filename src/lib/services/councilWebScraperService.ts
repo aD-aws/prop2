@@ -241,7 +241,7 @@ export class CouncilWebScraperService {
         address: address?.trim(),
         description: description?.trim(),
         status: this.normalizeStatus(status?.trim()),
-        submissionDate: this.parseDate(submissionDateStr)
+        submissionDate: this.parseDate(submissionDateStr || undefined)
       };
     } catch (error) {
       console.error('Error extracting basic info:', error);
@@ -322,7 +322,7 @@ export class CouncilWebScraperService {
           const element = await page.$(selector);
           if (element) {
             if (selector.includes('mailto:')) {
-              applicantInfo.applicantEmail = await page.evaluate(el => el.href?.replace('mailto:', ''), element);
+              applicantInfo.applicantEmail = await page.evaluate(el => (el as HTMLAnchorElement).href?.replace('mailto:', ''), element);
             } else {
               applicantInfo.applicantEmail = await page.evaluate(el => el.textContent?.trim(), element);
             }

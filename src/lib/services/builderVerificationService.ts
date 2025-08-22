@@ -291,7 +291,7 @@ export class BuilderVerificationService {
    * Check if builder has required insurance coverage
    */
   hasRequiredInsurance(vettingRecord: VettingRecord): boolean {
-    const requiredCoverageTypes = ['public_liability', 'employers_liability'];
+    const requiredCoverageTypes: ('public_liability' | 'employers_liability' | 'professional_indemnity')[] = ['public_liability', 'employers_liability'];
     const verifiedCoverageTypes = vettingRecord.insuranceVerification
       .filter(v => v.verified && v.validTo > new Date())
       .map(v => v.coverageType);

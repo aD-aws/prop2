@@ -60,7 +60,7 @@ export class QuestionnaireService {
     if (projectType === 'others' && customDescription) {
       // Use AI to analyze and determine appropriate agent
       const analysis = await agentSelector.analyzeOthersProject(customDescription);
-      agentId = analysis.recommendedAgent || 'general_project_agent';
+      agentId = analysis.orchestrator?.id || analysis.specialists[0]?.id || 'general_project_agent';
     } else {
       // Get the primary agent for this project type
       const requiredAgents = await agentSelector.getRequiredAgents(projectType);

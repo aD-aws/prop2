@@ -281,3 +281,6 @@ UK Home Improvement Platform Team
     );
   }
 }
+
+// Export instance for use in other services
+export const invitationService = InvitationService;

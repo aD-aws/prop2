@@ -231,8 +231,7 @@ export default function QuoteViewPage() {
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-xl font-semibold mb-4">Project Timeline</h2>
             <GanttChart 
-              tasks={project.ganttChart.tasks || []}
-              startDate={new Date(quote.startDate)}
+              ganttChart={project.ganttChart}
             />
           </div>
         )}

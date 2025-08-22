@@ -204,7 +204,14 @@ export class BuilderDashboardService {
       timeline: quoteData.timeline,
       startDate: quoteData.startDate,
       projectedCompletionDate: this.calculateCompletionDate(quoteData.startDate, quoteData.timeline),
-      amendments: quoteData.amendments || [],
+      amendments: (quoteData.amendments || []).map((amendment: any, index: number) => ({
+        id: `${quoteId}-amendment-${index}`,
+        section: amendment.section,
+        originalText: amendment.originalText,
+        proposedText: amendment.proposedText,
+        reason: amendment.reason,
+        status: 'proposed' as const
+      })),
       termsAndConditions: quoteData.termsAndConditions,
       insuranceDocuments: [], // Will be populated with actual Document objects
       referenceProjects: quoteData.referenceProjects,
@@ -256,7 +263,16 @@ export class BuilderDashboardService {
           ),
         }),
         ...(updates.startDate && { startDate: updates.startDate }),
-        ...(updates.amendments && { amendments: updates.amendments }),
+        ...(updates.amendments && { 
+          amendments: updates.amendments.map((amendment: any, index: number) => ({
+            id: `${quoteId}-amendment-${index}`,
+            section: amendment.section,
+            originalText: amendment.originalText,
+            proposedText: amendment.proposedText,
+            reason: amendment.reason,
+            status: 'proposed' as const
+          }))
+        }),
         ...(updates.termsAndConditions && { termsAndConditions: updates.termsAndConditions }),
         ...(updates.referenceProjects && { referenceProjects: updates.referenceProjects }),
         status: 'submitted', // Reset to submitted when updated

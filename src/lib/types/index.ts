@@ -315,6 +315,7 @@ export interface UserProfile {
 }
 
 export interface BuilderProfile extends UserProfile {
+  id: string;
   companyName: string;
   companiesHouseNumber: string;
   insuranceDocuments: Document[];
@@ -1008,4 +1009,37 @@ export interface BuilderLeadPriority {
   lastActive: Date;
   serviceAreas: string[];
   specializations: ProjectType[];
+}
+
+// Builder Analytics and Financial Summary Types
+export interface BuilderAnalytics {
+  totalLeadsPurchased: number;
+  totalSpentOnLeads: number;
+  monthlyLeadSpend: number;
+  averageLeadCost: number;
+  conversionRate: number;
+  projectsWon: number;
+  totalRevenue: number;
+  averageProjectValue: number;
+  topProjectTypes: { projectType: string; count: number; winRate: number }[];
+  geographicPerformance: { area: string; leadsCount: number; winRate: number }[];
+  professionalQuotesGenerated: number;
+  monthlyQuoteGeneration: number;
+}
+
+export interface BuilderFinancialSummary extends FinancialSummary {
+  analytics: BuilderAnalytics;
+  leadPurchaseHistory: LeadPurchase[];
+  subscriptionHistory: UserSubscription[];
+}
+
+// Lead Management Types
+export interface LeadOffer {
+  id: string;
+  projectId: string;
+  builderId: string;
+  price: number;
+  expiresAt: Date;
+  status: 'pending' | 'accepted' | 'expired' | 'declined';
+  offeredAt: Date;
 }

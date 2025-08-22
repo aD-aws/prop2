@@ -25,39 +25,46 @@ export class SoWReviewIntegration {
     questionnaireResponses: Record<string, any>,
     propertyDetails: any
   ): Promise<{
-    sowDocument: SoWDocument;
-    reviewAnalysis: BuilderReviewAnalysis;
+    jobId?: string;
+    sowDocument: SoWDocument | null;
+    reviewAnalysis: BuilderReviewAnalysis | null;
   }> {
     try {
       // Step 1: Generate the initial SoW
       console.log(`Generating SoW for project ${projectId}...`);
-      const sowDocument = await this.sowGenerationService.generateSoW(
+      const sowGenerationRequest = {
         projectId,
         projectType,
-        questionnaireResponses,
-        propertyDetails
+        propertyId: propertyDetails?.id || 'temp_property_id',
+        userResponses: questionnaireResponses
+      };
+      
+      const notificationPreferences = {
+        preferredMethod: 'email' as const
+      };
+      
+      const { jobId } = await this.sowGenerationService.startSoWGeneration(
+        sowGenerationRequest,
+        notificationPreferences
       );
+      
+      // For now, we'll need to handle the async nature differently
+      // This is a simplified approach - in production, you'd want to implement proper job polling
+      const sowDocument = null; // This would be retrieved once the job completes
 
-      // Step 2: Automatically trigger Builder Review Agent
-      console.log(`Triggering Builder Review Agent for project ${projectId}...`);
-      const reviewAnalysis = await this.builderReviewService.reviewSoW(
-        projectId,
-        sowDocument,
-        projectType,
-        propertyDetails
-      );
-
-      // Step 3: Update project with review results
-      await this.updateProjectWithReview(projectId, reviewAnalysis);
-
+      // Since SoW generation is now async, we return the job info
+      // The review will be triggered once the SoW generation completes
+      console.log(`SoW generation started with job ID: ${jobId}`);
+      
       return {
-        sowDocument,
-        reviewAnalysis
+        jobId,
+        sowDocument: null, // Will be available once job completes
+        reviewAnalysis: null // Will be triggered after SoW completion
       };
 
     } catch (error) {
       console.error('Error in SoW generation with review:', error);
-      throw new Error(`Failed to generate SoW with review: ${error.message}`);
+      throw new Error(`Failed to generate SoW with review: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -104,7 +111,7 @@ export class SoWReviewIntegration {
 
     } catch (error) {
       console.error('Error regenerating SoW with improvements:', error);
-      throw new Error(`Failed to regenerate SoW: ${error.message}`);
+      throw new Error(`Failed to regenerate SoW: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

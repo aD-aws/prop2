@@ -2,6 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand, GetCommand, UpdateCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { v4 as uuidv4 } from 'uuid';
+import { ProjectType } from '../types';
 import { aiService } from './aiService';
 import { sowGenerationService } from './sowGenerationService';
 import { timelineOptimizationService } from './timelineOptimizationService';
@@ -102,7 +103,7 @@ class BuilderQuoteGenerationService {
     return project;
   }
 
-  async generateSoWForBuilderProject(projectId: string): Promise<void> {
+  async generateSoWForBuilderProject(projectId: string): Promise<{ success: boolean; jobId: string; estimatedCompletionTime: Date; message: string; }> {
     const project = await this.getBuilderProject(projectId);
     if (!project) {
       throw new Error('Project not found');
@@ -113,34 +114,39 @@ class BuilderQuoteGenerationService {
 
     try {
       // Generate SoW using existing AI services
-      const sowResult = await sowGenerationService.generateSoW({
-        projectType: project.projectType,
-        propertyDetails: { address: project.propertyAddress },
-        projectDetails: project.projectDetails,
-        includeCosting: true // Include pricing for builders
+      const sowJob = await sowGenerationService.startSoWGeneration({
+        projectId: projectId,
+        projectType: (project.projectType as ProjectType) || 'others',
+        propertyId: '', // No propertyId available in BuilderQuoteProject
+        userResponses: {
+          propertyDetails: { address: project.propertyAddress },
+          projectDetails: project.projectDetails,
+          includeCosting: true // Include pricing for builders
+        }
+      }, {
+        preferredMethod: 'email' // Default notification method
       });
 
-      // Generate timeline optimization
-      const ganttChart = await timelineOptimizationService.optimizeTimeline(
-        sowResult.tasks,
-        project.projectDetails
-      );
-
-      // Update project with generated SoW and Gantt chart
+      // Store the job ID for tracking
       await dynamoClient.send(new UpdateCommand({
         TableName: 'BuilderQuoteProjects',
         Key: { id: projectId },
-        UpdateExpression: 'SET sowDocument = :sow, ganttChart = :gantt, #status = :status, updatedAt = :updatedAt',
-        ExpressionAttributeNames: {
-          '#status': 'status'
-        },
+        UpdateExpression: 'SET sowJobId = :jobId, sowJobStatus = :status, estimatedCompletionTime = :completionTime, updatedAt = :updatedAt',
         ExpressionAttributeValues: {
-          ':sow': sowResult,
-          ':gantt': ganttChart,
-          ':status': 'ready',
+          ':jobId': sowJob.jobId,
+          ':status': 'processing',
+          ':completionTime': sowJob.estimatedCompletionTime.toISOString(),
           ':updatedAt': new Date().toISOString()
         }
       }));
+
+      // Return job information instead of trying to process immediately
+      return {
+        success: true,
+        jobId: sowJob.jobId,
+        estimatedCompletionTime: sowJob.estimatedCompletionTime,
+        message: 'SoW generation started. You will be notified when complete.'
+      };
 
     } catch (error) {
       // Reset status on error

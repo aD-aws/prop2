@@ -62,7 +62,13 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
   };
 
   const calculateDiscountedPrice = (originalPrice: number, discount: DiscountCode): number => {
-    return discountService.calculateDiscountedPrice(originalPrice, discount);
+    let discountAmount = 0;
+    if (discount.type === 'percentage') {
+      discountAmount = originalPrice * (discount.value / 100);
+    } else {
+      discountAmount = Math.min(discount.value / 100, originalPrice); // Convert pence to pounds
+    }
+    return Math.max(0, originalPrice - discountAmount);
   };
 
   const getPrice = (plan: SubscriptionPlan): number => {

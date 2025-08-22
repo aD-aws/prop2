@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, Area, AreaChart
 } from 'recharts';
-import { builderAnalyticsService, BuilderAnalyticsDashboard, AIInsights } from '../../lib/services/builderAnalyticsService';
+import { builderAnalyticsService, type BuilderAnalyticsDashboard as BuilderAnalyticsData, type AIInsights } from '../../lib/services/builderAnalyticsService';
 
 interface Props {
   builderId: string;
@@ -14,7 +14,7 @@ interface Props {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export default function BuilderAnalyticsDashboard({ builderId }: Props) {
-  const [analytics, setAnalytics] = useState<BuilderAnalyticsDashboard | null>(null);
+  const [analytics, setAnalytics] = useState<BuilderAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'geographic' | 'categories' | 'insights'>('overview');
@@ -136,7 +136,7 @@ export default function BuilderAnalyticsDashboard({ builderId }: Props) {
   );
 }
 
-function OverviewTab({ analytics }: { analytics: BuilderAnalyticsDashboard }) {
+function OverviewTab({ analytics }: { analytics: BuilderAnalyticsData }) {
   const { aiInsights } = analytics;
   
   return (
@@ -195,7 +195,7 @@ function OverviewTab({ analytics }: { analytics: BuilderAnalyticsDashboard }) {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ postcode, percent }) => `${postcode} ${(percent * 100).toFixed(0)}%`}
+                label={({ postcode, percent }) => `${postcode} ${percent ? (percent * 100).toFixed(0) : 0}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="totalRevenue"
@@ -244,7 +244,7 @@ function OverviewTab({ analytics }: { analytics: BuilderAnalyticsDashboard }) {
   );
 }
 
-function GeographicTab({ analytics }: { analytics: BuilderAnalyticsDashboard }) {
+function GeographicTab({ analytics }: { analytics: BuilderAnalyticsData }) {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-medium">Geographic Performance Analysis</h3>
@@ -343,7 +343,7 @@ function GeographicTab({ analytics }: { analytics: BuilderAnalyticsDashboard }) 
   );
 }
 
-function CategoriesTab({ analytics }: { analytics: BuilderAnalyticsDashboard }) {
+function CategoriesTab({ analytics }: { analytics: BuilderAnalyticsData }) {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-medium">Project Category Analysis</h3>

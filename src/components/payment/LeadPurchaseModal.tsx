@@ -9,6 +9,10 @@ import {
   useElements,
 } from '@stripe/react-stripe-js';
 import { Project, BuilderProfile } from '../../lib/types';
+
+interface BuilderWithId extends BuilderProfile {
+  id: string;
+}
 import { leadPurchaseService } from '../../lib/services/leadPurchaseService';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -17,7 +21,7 @@ interface LeadPurchaseModalProps {
   isOpen: boolean;
   onClose: () => void;
   project: Project;
-  availableBuilders: BuilderProfile[];
+  availableBuilders: BuilderWithId[];
   onSuccess: (builderId: string) => void;
 }
 

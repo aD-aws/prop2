@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 export interface QuoteVarianceMetrics {
   projectId: string;
@@ -96,7 +96,7 @@ class AdminAnalyticsService {
     projectType?: string
   ): Promise<QuoteVarianceMetrics[]> {
     try {
-      const params = {
+      const params: any = {
         TableName: 'Projects',
         FilterExpression: 'createdAt BETWEEN :start AND :end',
         ExpressionAttributeValues: {
@@ -481,7 +481,7 @@ class AdminAnalyticsService {
       const invitationCode = Math.random().toString(36).substring(2, 15);
 
       // Update project with new invitation
-      await this.dynamoClient.send(new QueryCommand({
+      await this.dynamoClient.send(new UpdateCommand({
         TableName: 'Projects',
         Key: { id: projectId },
         UpdateExpression: 'SET invitedBuilders = list_append(if_not_exists(invitedBuilders, :empty_list), :new_invitation)',

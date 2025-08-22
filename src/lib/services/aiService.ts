@@ -287,19 +287,25 @@ export class AIService {
   ): Promise<void> {
     await this.initialize();
 
-    // Get existing prompt
-    const activePrompt = await promptManager.getActivePrompt(agentId);
-    if (!activePrompt) {
-      throw new Error(`No active prompt found for agent ${agentId}`);
+    // Get prompts by category to find the agent's prompt
+    const prompts = await promptManager.getPromptsByCategory('specialist');
+    const agentPrompt = prompts.find(p => p.name.toLowerCase().includes(agentId.toLowerCase()));
+    
+    if (!agentPrompt) {
+      throw new Error(`No prompt found for agent ${agentId}`);
     }
 
-    // Update the prompt
-    await promptManager.updatePrompt(
-      activePrompt.promptId,
-      { template: newPrompt },
-      changelog,
-      updatedBy
-    );
+    // Create a new version of the prompt with updated template
+    await promptManager.createPrompt({
+      name: agentPrompt.name,
+      description: agentPrompt.description,
+      category: agentPrompt.category,
+      template: newPrompt,
+      variables: agentPrompt.variables,
+      version: agentPrompt.version + 1,
+      isActive: true,
+      createdBy: updatedBy
+    });
   }
 
   /**
@@ -308,12 +314,15 @@ export class AIService {
   async getAgentMetrics(agentId: string): Promise<any> {
     await this.initialize();
 
-    const activePrompt = await promptManager.getActivePrompt(agentId);
-    if (!activePrompt) {
+    // Get prompts by category to find the agent's prompt
+    const prompts = await promptManager.getPromptsByCategory('specialist');
+    const agentPrompt = prompts.find(p => p.name.toLowerCase().includes(agentId.toLowerCase()));
+    
+    if (!agentPrompt) {
       return null;
     }
 
-    return promptManager.getPromptMetrics(activePrompt.promptId, activePrompt.version);
+    return promptManager.getPromptMetrics(agentPrompt.id, agentPrompt.version);
   }
 
   /**
@@ -332,7 +341,7 @@ export class AIService {
 
       const testContext: ProjectContext = {
         projectId: 'insights_analysis',
-        projectType: 'analytics',
+        projectType: 'others',
         property: {} as any,
         userResponses: { analysisPrompt: prompt },
         previousAgentResponses: []
@@ -343,7 +352,7 @@ export class AIService {
         context: testContext
       });
 
-      return response.content || 'Unable to generate insights at this time.';
+      return response.response || 'Unable to generate insights at this time.';
     } catch (error) {
       console.error('Error generating AI insights:', error);
       throw new Error('Failed to generate AI insights');

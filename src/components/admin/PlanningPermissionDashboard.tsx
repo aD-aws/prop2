@@ -193,7 +193,7 @@ export const PlanningPermissionDashboard: React.FC = () => {
 
   const handleDataDeletion = async (email: string) => {
     try {
-      await gdprComplianceService.handleErasureRequest(email, undefined, 'Admin requested data deletion');
+      await gdprComplianceService.handleErasureRequest(email, 'Admin requested data deletion', undefined);
       console.log(`Initiated data deletion for ${email}`);
     } catch (error) {
       console.error('Error initiating data deletion:', error);

@@ -176,11 +176,15 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   };
 
   // Handle task click
-  const handleTaskClick = (data: GanttChartData) => {
+  const handleTaskClick = (data: any) => {
     if (!interactive) return;
     
-    setSelectedTask(data.taskId);
-    const task = ganttChart.tasks.find(t => t.id === data.taskId);
+    // Extract the payload data from the recharts click event
+    const chartData = data?.payload as GanttChartData;
+    if (!chartData) return;
+    
+    setSelectedTask(chartData.taskId);
+    const task = ganttChart.tasks.find(t => t.id === chartData.taskId);
     if (task && onTaskClick) {
       onTaskClick(task);
     }

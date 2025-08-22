@@ -134,11 +134,11 @@ export class BuilderSelectionService {
       const project = projectResult.Item as Project;
       
       if (project.quotes) {
-        for (const otherQuoteId of project.quotes) {
-          if (otherQuoteId !== quoteId) {
+        for (const otherQuote of project.quotes) {
+          if (otherQuote.id !== quoteId) {
             await DynamoDBService.updateItem(
               this.QUOTES_TABLE,
-              { id: otherQuoteId },
+              { id: otherQuote.id },
               { status: 'rejected' }
             );
           }

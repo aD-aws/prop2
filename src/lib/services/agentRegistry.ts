@@ -52,6 +52,7 @@ export class AgentRegistry {
           'loft_conversion_velux',
           'loft_conversion_roof_light'
         ] as ProjectType[],
+        promptTemplate: 'You are a loft conversion specialist AI agent. Analyze the project requirements and coordinate with structural, electrical, plumbing, heating, and insulation specialists to create a comprehensive loft conversion plan.',
         dependencies: ['structural_agent', 'electrical_agent', 'plumbing_agent', 'heating_hvac_agent', 'insulation_agent'],
         isOrchestrator: true,
         knowledgeBase: {
@@ -112,6 +113,7 @@ export class AgentRegistry {
           'side_extension_double_storey',
           'side_extension_infill'
         ] as ProjectType[],
+        promptTemplate: 'You are an extension specialist AI agent. Analyze the project requirements and coordinate with structural, electrical, plumbing, heating, and roofing specialists to create a comprehensive extension plan.',
         dependencies: ['structural_agent', 'electrical_agent', 'plumbing_agent', 'heating_hvac_agent', 'roofing_agent'],
         isOrchestrator: true,
         knowledgeBase: {
@@ -167,6 +169,7 @@ export class AgentRegistry {
           'basement_conversion_full',
           'basement_conversion_partial'
         ] as ProjectType[],
+        promptTemplate: 'You are a basement conversion specialist AI agent. Analyze the project requirements and coordinate with structural, electrical, plumbing, heating, and insulation specialists to create a comprehensive basement conversion plan.',
         dependencies: ['structural_agent', 'electrical_agent', 'plumbing_agent', 'heating_hvac_agent', 'insulation_agent'],
         isOrchestrator: true,
         knowledgeBase: {
@@ -224,6 +227,7 @@ export class AgentRegistry {
           'garage_conversion_gym',
           'garage_conversion_studio'
         ] as ProjectType[],
+        promptTemplate: 'You are a garage conversion specialist AI agent. Analyze the project requirements and coordinate with structural, electrical, plumbing, heating, and insulation specialists to create a comprehensive garage conversion plan.',
         dependencies: ['structural_agent', 'electrical_agent', 'plumbing_agent', 'heating_hvac_agent', 'insulation_agent'],
         isOrchestrator: true,
         knowledgeBase: {
@@ -284,6 +288,7 @@ export class AgentRegistry {
           'kitchen_u_shaped',
           'kitchen_bespoke_design'
         ] as ProjectType[],
+        promptTemplate: 'You are a kitchen design specialist AI agent. Analyze the project requirements and create a comprehensive kitchen design and installation plan.',
         dependencies: [],
         isOrchestrator: true,
         knowledgeBase: {
@@ -344,6 +349,7 @@ export class AgentRegistry {
           'bathroom_family',
           'bathroom_luxury_suite'
         ] as ProjectType[],
+        promptTemplate: 'You are a bathroom design specialist AI agent. Analyze the project requirements and create a comprehensive bathroom design and installation plan.',
         dependencies: [],
         isOrchestrator: true,
         knowledgeBase: {
@@ -400,6 +406,7 @@ export class AgentRegistry {
           'bedroom_guest',
           'bedroom_nursery'
         ] as ProjectType[],
+        promptTemplate: 'You are a bedroom design specialist AI agent. Analyze the project requirements and create a comprehensive bedroom design and renovation plan.',
         dependencies: [],
         isOrchestrator: true,
         knowledgeBase: {
@@ -456,6 +463,7 @@ export class AgentRegistry {
           'living_room_storage',
           'living_room_snug'
         ] as ProjectType[],
+        promptTemplate: 'You are a living room design specialist AI agent. Analyze the project requirements and create a comprehensive living room design and renovation plan.',
         dependencies: [],
         isOrchestrator: true,
         knowledgeBase: {
@@ -529,6 +537,7 @@ export class AgentRegistry {
           'doors_french',
           'bay_window_installation'
         ] as ProjectType[],
+        promptTemplate: 'You are a windows and doors specialist AI agent. Analyze the project requirements and provide expert recommendations for glazing, frames, and installation.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -586,6 +595,7 @@ export class AgentRegistry {
           'electrical_ev_charging',
           'electrical_smart_home'
         ] as ProjectType[],
+        promptTemplate: 'You are an electrical specialist AI agent. Analyze the project requirements and provide expert recommendations for wiring, safety compliance, and electrical system design.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -642,6 +652,7 @@ export class AgentRegistry {
           'plumbing_water_pressure',
           'plumbing_mains_upgrade'
         ] as ProjectType[],
+        promptTemplate: 'You are a plumbing specialist AI agent. Analyze the project requirements and provide expert recommendations for water supply and drainage systems. Consider pipe sizing, water pressure, and building regulations.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -701,6 +712,7 @@ export class AgentRegistry {
           'roofing_tile',
           'roofing_metal'
         ] as ProjectType[],
+        promptTemplate: 'You are a roofing specialist AI agent. Analyze the project requirements and provide expert recommendations for roof construction, repairs, and replacements. Consider structural requirements, weatherproofing, and building regulations.',
         dependencies: ['structural_agent'],
         isOrchestrator: false,
         knowledgeBase: {
@@ -760,6 +772,7 @@ export class AgentRegistry {
           'ventilation_mvhr',
           'ventilation_extract_fans'
         ] as ProjectType[],
+        promptTemplate: 'You are a heating and HVAC specialist AI agent. Analyze the project requirements and provide expert recommendations for heating, ventilation, and air conditioning systems. Consider energy efficiency, building regulations, and system optimization.',
         dependencies: ['electrical_agent', 'plumbing_agent'],
         isOrchestrator: false,
         knowledgeBase: {
@@ -817,6 +830,7 @@ export class AgentRegistry {
           'cladding_timber',
           'cladding_brick_slip'
         ] as ProjectType[],
+        promptTemplate: 'You are a rendering and cladding specialist. Analyze the project requirements and provide detailed recommendations for external rendering and cladding systems. Consider weather protection, thermal performance, structural requirements, and building regulations.',
         dependencies: ['structural_agent'],
         isOrchestrator: false,
         knowledgeBase: {
@@ -874,6 +888,7 @@ export class AgentRegistry {
           'garden_decking_raised',
           'garden_pergola'
         ] as ProjectType[],
+        promptTemplate: 'You are a landscaping and garden design specialist. Analyze the project requirements and provide detailed recommendations for garden design and installation. Consider soil conditions, drainage, plant selection, structural requirements, and planning regulations.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -935,6 +950,7 @@ export class AgentRegistry {
           'patio_natural_stone',
           'patio_concrete'
         ] as ProjectType[],
+        promptTemplate: 'You are a driveway and patio specialist. Analyze the project requirements and provide detailed recommendations for driveway and patio construction. Consider materials, drainage, sub-base preparation, and planning requirements.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -986,6 +1002,7 @@ export class AgentRegistry {
         name: 'Structural Engineering Agent',
         specialization: 'Structural calculations and building stability',
         projectTypes: [] as ProjectType[], // Used by multiple project types
+        promptTemplate: 'You are a structural engineering specialist. Analyze the project requirements and provide detailed structural calculations and recommendations. Consider load-bearing requirements, building stability, and structural regulations.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1022,6 +1039,7 @@ export class AgentRegistry {
           'electrical_ev_charging',
           'electrical_smart_home'
         ] as ProjectType[],
+        promptTemplate: 'You are an electrical systems specialist. Analyze the project requirements and provide detailed recommendations for electrical installations. Consider safety regulations, circuit design, load calculations, and certification requirements.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1058,6 +1076,7 @@ export class AgentRegistry {
           'plumbing_water_pressure',
           'plumbing_mains_upgrade'
         ] as ProjectType[],
+        promptTemplate: 'You are a plumbing systems specialist. Analyze the project requirements and provide detailed recommendations for water supply and drainage systems. Consider pipe sizing, water pressure, drainage requirements, and building regulations.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1097,6 +1116,7 @@ export class AgentRegistry {
           'doors_sliding',
           'doors_french'
         ] as ProjectType[],
+        promptTemplate: 'You are a windows and doors specialist. Analyze the project requirements and provide detailed recommendations for window and door installations. Consider energy efficiency, security, structural requirements, and building regulations.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1136,6 +1156,7 @@ export class AgentRegistry {
           'roofing_tile',
           'roofing_metal'
         ] as ProjectType[],
+        promptTemplate: 'You are a roofing systems specialist. Analyze the project requirements and provide detailed recommendations for roof construction, repairs, and replacements. Consider structural requirements, weatherproofing, insulation, and building regulations.',
         dependencies: ['structural_agent'],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1173,6 +1194,7 @@ export class AgentRegistry {
           'insulation_floor',
           'insulation_acoustic'
         ] as ProjectType[],
+        promptTemplate: 'You are an insulation systems specialist. Analyze the project requirements and provide detailed recommendations for thermal and acoustic insulation. Consider energy efficiency, building regulations, vapor barriers, and thermal bridging.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1212,6 +1234,7 @@ export class AgentRegistry {
           'ventilation_mvhr',
           'ventilation_extract_fans'
         ] as ProjectType[],
+        promptTemplate: 'You are a heating and HVAC specialist. Analyze the project requirements and provide detailed recommendations for heating, ventilation, and air conditioning systems. Consider energy efficiency, building regulations, and optimal system sizing.',
         dependencies: ['electrical_agent', 'plumbing_agent'],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1255,6 +1278,7 @@ export class AgentRegistry {
           'flooring_concrete_polished',
           'flooring_resin_epoxy'
         ] as ProjectType[],
+        promptTemplate: 'You are a flooring systems specialist. Analyze the project requirements and provide detailed recommendations for floor coverings and subfloor preparation. Consider durability, aesthetics, maintenance, and building regulations.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1291,6 +1315,7 @@ export class AgentRegistry {
           'tiling_natural_stone',
           'tiling_mosaic'
         ] as ProjectType[],
+        promptTemplate: 'You are a tiling systems specialist. Analyze the project requirements and provide detailed recommendations for ceramic, porcelain, and stone tiling installations. Consider substrate preparation, waterproofing, and aesthetic requirements.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1334,6 +1359,7 @@ export class AgentRegistry {
         name: 'Project Analysis Agent',
         specialization: 'Analyzing "Others" project descriptions',
         projectTypes: ['others'] as ProjectType[],
+        promptTemplate: 'You are a project analysis specialist. Analyze project descriptions and requirements to identify the appropriate trades, specialists, and regulatory requirements. Provide detailed project breakdown and recommendations.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1365,6 +1391,7 @@ export class AgentRegistry {
         name: 'Timeline Optimization Agent',
         specialization: 'Optimizing project timelines and dependencies',
         projectTypes: [] as ProjectType[], // Used by all projects
+        promptTemplate: 'You are a timeline optimization specialist. Analyze project requirements and dependencies to create optimized project timelines. Consider critical path, parallel work opportunities, and trade dependencies.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1396,6 +1423,7 @@ export class AgentRegistry {
         name: 'Builder Review Agent',
         specialization: 'Reviewing SoW for accuracy and completeness',
         projectTypes: [] as ProjectType[], // Used for all project types
+        promptTemplate: 'You are a builder review specialist. Review Statements of Work for accuracy, completeness, and feasibility. Identify potential issues, missing specifications, and provide recommendations for improvement.',
         dependencies: [],
         isOrchestrator: false,
         knowledgeBase: {
@@ -1788,7 +1816,7 @@ Ensure all recommendations optimize energy efficiency and comply with UK buildin
         agentId: 'kitchen_orchestrator',
         name: 'Kitchen Design & Installation Prompt',
         description: 'Specialized prompt for kitchen design and installation expertise',
-        category: 'room_specific' as const,
+        category: 'specialist' as const,
         template: `You are a specialist Kitchen AI agent with comprehensive expertise in kitchen design and installation for UK properties.
 
 Project Context:
@@ -1860,7 +1888,7 @@ Ensure all recommendations optimize workflow, comply with UK building regulation
         agentId: 'bathroom_orchestrator',
         name: 'Bathroom Design & Wet Areas Prompt',
         description: 'Specialized prompt for bathroom design with wet room and fixture expertise',
-        category: 'room_specific' as const,
+        category: 'specialist' as const,
         template: `You are a specialist Bathroom AI agent with extensive expertise in bathroom design, wet areas, and fixture installation for UK properties.
 
 Project Context:
@@ -1934,7 +1962,7 @@ Ensure all recommendations prioritize waterproofing, safety, and regulatory comp
         agentId: 'bedroom_orchestrator',
         name: 'Bedroom Renovation & Conversion Prompt',
         description: 'Specialized prompt for bedroom renovation and conversion expertise',
-        category: 'room_specific' as const,
+        category: 'specialist' as const,
         template: `You are a specialist Bedroom AI agent with comprehensive expertise in bedroom renovation and conversion for UK properties.
 
 Project Context:
@@ -2008,7 +2036,7 @@ Ensure all recommendations create comfortable, functional, and adaptable bedroom
         agentId: 'living_room_agent',
         name: 'Living Room Design & Features Prompt',
         description: 'Specialized prompt for living room renovation with open plan and feature expertise',
-        category: 'room_specific' as const,
+        category: 'specialist' as const,
         template: `You are a specialist Living Room AI agent with comprehensive expertise in living room renovation, open plan design, and feature installations for UK properties.
 
 Project Context:

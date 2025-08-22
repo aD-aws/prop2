@@ -174,8 +174,8 @@ export class SubscriptionService {
         status: 'active',
         stripeSubscriptionId: stripeSubscription.id,
         stripeCustomerId,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
         cancelAtPeriodEnd: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -219,8 +219,8 @@ export class SubscriptionService {
       const updatedSubscription: UserSubscription = {
         ...currentSubscription,
         planId: newPlanId,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
         updatedAt: new Date(),
       };
 
@@ -367,7 +367,7 @@ export class SubscriptionService {
       return {
         userId,
         userType: 'homeowner', // This should be fetched from user data
-        currentSubscription: subscription,
+        currentSubscription: subscription || undefined,
         totalSpent,
         monthlySpend,
         yearlySpend,

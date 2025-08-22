@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useAuth } from '@/components/auth/AuthProvider';
 import AdminAnalyticsDashboard from '@/components/admin/AdminAnalyticsDashboard';
 import AdminProjectManagement from '@/components/admin/AdminProjectManagement';
 import LeadManagementDashboard from '@/components/admin/LeadManagementDashboard';
 import VettingDashboard from '@/components/admin/VettingDashboard';
 
 export default function AdminPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'analytics' | 'projects' | 'leads' | 'vetting'>('analytics');
 
   return (
@@ -64,8 +66,8 @@ export default function AdminPage() {
           <LeadManagementDashboard />
         )}
 
-        {activeTab === 'vetting' && (
-          <VettingDashboard />
+        {activeTab === 'vetting' && user && (
+          <VettingDashboard adminId={user.id} />
         )}
       </div>
     </div>

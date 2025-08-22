@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { VettingRecord, VettingStatus } from '@/lib/types';
-import { builderVerificationService } from '@/lib/services/builderVerificationService';
+import { VettingStatus } from '@/lib/types';
+import { builderVerificationService, VettingRecord } from '@/lib/services/builderVerificationService';
 
 interface VettingDashboardProps {
   adminId: string;
 }
 
-export function VettingDashboard({ adminId }: VettingDashboardProps) {
+export default function VettingDashboard({ adminId }: VettingDashboardProps) {
   const [vettingRecords, setVettingRecords] = useState<VettingRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<VettingRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);

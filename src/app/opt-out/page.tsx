@@ -89,8 +89,8 @@ export default function OptOutPage() {
     try {
       await gdprComplianceService.handleErasureRequest(
         email, 
-        phone || undefined, 
-        'User requested data deletion via opt-out page'
+        'User requested data deletion via opt-out page',
+        phone || undefined
       );
       
       setSuccess(true);

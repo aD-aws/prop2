@@ -13,7 +13,7 @@ import {
 
 // Initialize Stripe with secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-07-30.basil',
 });
 
 export class PaymentService {
@@ -89,7 +89,7 @@ export class PaymentService {
         if (discountCode && this.isDiscountCodeValid(discountCode)) {
           // Create Stripe coupon for the discount
           const coupon = await this.createStripeCoupon(discountCode);
-          subscriptionData.coupon = coupon.id;
+          subscriptionData.discounts = [{ coupon: coupon.id }];
         }
       }
 

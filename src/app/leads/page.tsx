@@ -7,18 +7,18 @@ import LeadManagement from '@/components/homeowner/LeadManagement';
 import LeadManagementDashboard from '@/components/admin/LeadManagementDashboard';
 
 export default function LeadsPage() {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
   const [userType, setUserType] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
-      // Get user type from user attributes or profile
-      const type = user.attributes?.['custom:userType'] || 'homeowner';
+      // Get user type from user profile
+      const type = user.userType || 'homeowner';
       setUserType(type);
     }
   }, [user]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -63,11 +63,11 @@ export default function LeadsPage() {
 
         {/* Content based on user type */}
         {userType === 'builder' && (
-          <BuilderLeadDashboard builderId={user.sub} />
+          <BuilderLeadDashboard builderId={user.id} />
         )}
 
         {userType === 'homeowner' && (
-          <LeadManagement homeownerId={user.sub} />
+          <LeadManagement homeownerId={user.id} />
         )}
 
         {userType === 'admin' && (

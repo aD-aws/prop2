@@ -495,3 +495,6 @@ export class ProjectTypeService {
     });
   }
 }
+
+// Export instance for use in other services
+export const projectTypeService = ProjectTypeService;

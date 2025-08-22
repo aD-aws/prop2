@@ -89,7 +89,7 @@ export class GDPRComplianceService {
 
     // Update all matching consent records
     for (const consent of existingConsents) {
-      await dynamodb.update({
+      await dynamodb.send(new UpdateCommand({
         TableName: this.consentTableName,
         Key: { id: consent.id },
         UpdateExpression: 'SET consentGiven = :false, withdrawalDate = :date, withdrawalReason = :reason',
@@ -98,7 +98,7 @@ export class GDPRComplianceService {
           ':date': new Date().toISOString(),
           ':reason': reason || 'User requested withdrawal'
         }
-      }).promise();
+      }));
     }
 
     // Record opt-out
@@ -141,7 +141,6 @@ export class GDPRComplianceService {
     const processingRecord: DataProcessingRecord = {
       id: uuidv4(),
       deletionDate,
-      processingStatus: 'active',
       ...processing
     };
 
@@ -168,10 +167,10 @@ export class GDPRComplianceService {
       requestDetails: 'Data subject access request - provide all personal data'
     };
 
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.requestsTableName,
       Item: request
-    }).promise();
+    }));
 
     // Start verification process
     await this.initiateVerification(request.id, email);
@@ -182,7 +181,7 @@ export class GDPRComplianceService {
   /**
    * Handle data erasure request (Right to be Forgotten)
    */
-  async handleErasureRequest(email: string, phone?: string, reason: string): Promise<DataSubjectRequest> {
+  async handleErasureRequest(email: string, reason: string, phone?: string): Promise<DataSubjectRequest> {
     const request: DataSubjectRequest = {
       id: uuidv4(),
       requestType: 'erasure',
@@ -194,10 +193,10 @@ export class GDPRComplianceService {
       requestDetails: reason
     };
 
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.requestsTableName,
       Item: request
-    }).promise();
+    }));
 
     // Start verification process
     await this.initiateVerification(request.id, email);
@@ -220,10 +219,10 @@ export class GDPRComplianceService {
       requestDetails: 'Data portability request - export personal data in machine-readable format'
     };
 
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.requestsTableName,
       Item: request
-    }).promise();
+    }));
 
     await this.initiateVerification(request.id, email);
 
@@ -242,7 +241,7 @@ export class GDPRComplianceService {
       const isValid = await this.validateVerificationToken(verificationToken, request.dataSubjectEmail);
       
       if (isValid) {
-        await dynamodb.update({
+        await dynamodb.send(new UpdateCommand({
           TableName: this.requestsTableName,
           Key: { id: requestId },
           UpdateExpression: 'SET verificationStatus = :verified, fulfillmentStatus = :inProgress',
@@ -250,7 +249,7 @@ export class GDPRComplianceService {
             ':verified': 'verified',
             ':inProgress': 'in_progress'
           }
-        }).promise();
+        }));
 
         // Process the request
         await this.processVerifiedRequest(request);
@@ -274,10 +273,10 @@ export class GDPRComplianceService {
       ...optOut
     };
 
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.optOutTableName,
       Item: optOutRecord
-    }).promise();
+    }));
 
     return optOutRecord;
   }
@@ -302,7 +301,7 @@ export class GDPRComplianceService {
         params.ExpressionAttributeValues[':phone'] = phone;
       }
 
-      const result = await dynamodb.scan(params).promise();
+      const result = await dynamodb.send(new ScanCommand(params));
       return (result.Items?.length || 0) > 0;
     } catch (error) {
       console.error('Error checking opt-out status:', error);
@@ -376,7 +375,7 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
       }
     };
 
-    const result = await dynamodb.scan(params).promise();
+    const result = await dynamodb.send(new ScanCommand(params));
     return result.Items as GDPRConsent[] || [];
   }
 
@@ -404,7 +403,7 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
   }
 
   private async storeVerificationToken(token: string, email: string): Promise<void> {
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: 'VerificationTokens',
       Item: {
         token,
@@ -412,15 +411,15 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
       }
-    }).promise();
+    }));
   }
 
   private async validateVerificationToken(token: string, email: string): Promise<boolean> {
     try {
-      const result = await dynamodb.get({
+      const result = await dynamodb.send(new GetCommand({
         TableName: 'VerificationTokens',
         Key: { token }
-      }).promise();
+      }));
 
       const tokenRecord = result.Item;
       if (!tokenRecord) return false;
@@ -440,10 +439,10 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
 
   private async getDataSubjectRequest(requestId: string): Promise<DataSubjectRequest | null> {
     try {
-      const result = await dynamodb.get({
+      const result = await dynamodb.send(new GetCommand({
         TableName: this.requestsTableName,
         Key: { id: requestId }
-      }).promise();
+      }));
 
       return result.Item as DataSubjectRequest || null;
     } catch (error) {
@@ -472,7 +471,7 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
     const personalData = await this.collectPersonalData(request.dataSubjectEmail);
     
     // Update request with response data
-    await dynamodb.update({
+    await dynamodb.send(new UpdateCommand({
       TableName: this.requestsTableName,
       Key: { id: request.id },
       UpdateExpression: 'SET fulfillmentStatus = :completed, fulfillmentDate = :date, responseData = :data',
@@ -481,7 +480,7 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
         ':date': new Date().toISOString(),
         ':data': personalData
       }
-    }).promise();
+    }));
 
     // Send data to user (implement secure delivery)
     await this.deliverPersonalData(request.dataSubjectEmail, personalData);
@@ -492,7 +491,7 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
     await this.erasePersonalData(request.dataSubjectEmail, request.dataSubjectPhone);
     
     // Update request status
-    await dynamodb.update({
+    await dynamodb.send(new UpdateCommand({
       TableName: this.requestsTableName,
       Key: { id: request.id },
       UpdateExpression: 'SET fulfillmentStatus = :completed, fulfillmentDate = :date',
@@ -500,7 +499,7 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
         ':completed': 'completed',
         ':date': new Date().toISOString()
       }
-    }).promise();
+    }));
   }
 
   private async fulfillPortabilityRequest(request: DataSubjectRequest): Promise<void> {
@@ -508,7 +507,7 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
     const exportData = await this.exportPersonalData(request.dataSubjectEmail);
     
     // Update request with export data
-    await dynamodb.update({
+    await dynamodb.send(new UpdateCommand({
       TableName: this.requestsTableName,
       Key: { id: request.id },
       UpdateExpression: 'SET fulfillmentStatus = :completed, fulfillmentDate = :date, responseData = :data',
@@ -517,7 +516,7 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
         ':date': new Date().toISOString(),
         ':data': exportData
       }
-    }).promise();
+    }));
 
     // Deliver export file
     await this.deliverExportData(request.dataSubjectEmail, exportData);
@@ -565,30 +564,30 @@ OPT-OUT: You can opt out of marketing communications at any time by clicking the
       }
     };
 
-    const result = await dynamodb.scan(params).promise();
+    const result = await dynamodb.send(new ScanCommand(params));
     return result.Items as DataProcessingRecord[] || [];
   }
 
   private async archiveDataRecord(recordId: string): Promise<void> {
-    await dynamodb.update({
+    await dynamodb.send(new UpdateCommand({
       TableName: this.processingTableName,
       Key: { id: recordId },
       UpdateExpression: 'SET processingStatus = :archived',
       ExpressionAttributeValues: {
         ':archived': 'archived'
       }
-    }).promise();
+    }));
   }
 
   private async deleteDataRecord(recordId: string): Promise<void> {
-    await dynamodb.update({
+    await dynamodb.send(new UpdateCommand({
       TableName: this.processingTableName,
       Key: { id: recordId },
       UpdateExpression: 'SET processingStatus = :deleted',
       ExpressionAttributeValues: {
         ':deleted': 'deleted'
       }
-    }).promise();
+    }));
   }
 }
 

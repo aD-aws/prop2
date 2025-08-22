@@ -246,17 +246,17 @@ class LeadManagementService {
 
     try {
       // Process payment for the lead
-      const paymentResult = await paymentService.createPaymentIntent({
-        amount: lead.price * 100, // Convert to pence
-        currency: 'gbp',
-        customerId: builderId,
-        description: `Lead purchase for project ${lead.projectId}`,
-        metadata: {
+      const paymentResult = await paymentService.createPaymentIntent(
+        lead.price * 100, // Convert to pence
+        'gbp',
+        builderId,
+        `Lead purchase for project ${lead.projectId}`,
+        {
           leadId: lead.id,
           offerId: offer.id,
           projectType: lead.projectType
         }
-      });
+      );
 
       // Update offer with payment intent
       await this.dynamoClient.send(new UpdateCommand({
@@ -264,13 +264,13 @@ class LeadManagementService {
         Key: { id: offerId },
         UpdateExpression: 'SET paymentIntentId = :paymentIntentId',
         ExpressionAttributeValues: {
-          ':paymentIntentId': paymentResult.paymentIntentId
+          ':paymentIntentId': paymentResult.id
         }
       }));
 
       return { 
         success: true, 
-        paymentIntentId: paymentResult.paymentIntentId 
+        paymentIntentId: paymentResult.id 
       };
     } catch (error) {
       console.error('Error processing lead payment:', error);
@@ -327,7 +327,7 @@ class LeadManagementService {
     const lead = await this.getLead(offer.leadId);
     if (lead) {
       // Generate invitation code for the builder
-      const invitationCode = await invitationService.generateInvitationCode(
+      const invitationResult = await invitationService.generateInvitationCode(
         lead.projectId,
         offer.builderId
       );
@@ -336,7 +336,9 @@ class LeadManagementService {
       await this.notifyHomeownerBuilderFound(lead, offer.builderId);
 
       // Notify builder with project access
-      await this.notifyBuilderProjectAccess(offer.builderId, lead.projectId, invitationCode);
+      if (invitationResult.success && invitationResult.invitationCode) {
+        await this.notifyBuilderProjectAccess(offer.builderId, lead.projectId, invitationResult.invitationCode);
+      }
     }
   }
 

@@ -232,7 +232,7 @@ export class TermsConditionsService {
           ':reviewedBy': reviewerId,
           ':updatedAt': now
         },
-        ReturnValues: 'ALL_NEW'
+        ReturnValues: 'ALL_NEW' as const
       };
 
       const result = await docClient.send(new UpdateCommand(params));
@@ -325,7 +325,7 @@ export class TermsConditionsService {
           ':accepted': true,
           ':updatedAt': now
         },
-        ReturnValues: 'ALL_NEW'
+        ReturnValues: 'ALL_NEW' as const
       };
 
       const result = await docClient.send(new UpdateCommand(params));
@@ -343,7 +343,7 @@ export class TermsConditionsService {
           ExpressionAttributeValues: {
             ':agreedAt': now
           },
-          ReturnValues: 'ALL_NEW'
+          ReturnValues: 'ALL_NEW' as const
         };
 
         const agreeResult = await docClient.send(new UpdateCommand(agreeParams));

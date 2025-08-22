@@ -309,7 +309,7 @@ export class AgentOrchestrator {
     const sections: any[] = [];
 
     responses.forEach(response => {
-      if (response.data.sowSections) {
+      if (response.data.sowSections && Array.isArray(response.data.sowSections)) {
         sections.push(...response.data.sowSections);
       }
     });
@@ -324,7 +324,7 @@ export class AgentOrchestrator {
     const tasks: TaskTimeline[] = [];
 
     responses.forEach(response => {
-      if (response.data.timeline) {
+      if (response.data.timeline && Array.isArray(response.data.timeline)) {
         tasks.push(...response.data.timeline);
       }
     });
@@ -339,7 +339,7 @@ export class AgentOrchestrator {
     const materials: MaterialSpecification[] = [];
 
     responses.forEach(response => {
-      if (response.data.materials) {
+      if (response.data.materials && Array.isArray(response.data.materials)) {
         materials.push(...response.data.materials);
       }
     });
@@ -354,7 +354,7 @@ export class AgentOrchestrator {
     const laborReqs: LaborRequirement[] = [];
 
     responses.forEach(response => {
-      if (response.data.laborRequirements) {
+      if (response.data.laborRequirements && Array.isArray(response.data.laborRequirements)) {
         laborReqs.push(...response.data.laborRequirements);
       }
     });

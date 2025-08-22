@@ -59,10 +59,12 @@ export function QuoteSubmissionForm({
       if (keys.length === 1) {
         return { ...prev, [field]: value };
       } else if (keys.length === 2) {
+        const parentKey = keys[0] as keyof QuoteSubmissionData;
+        const parentValue = prev[parentKey];
         return {
           ...prev,
           [keys[0]]: {
-            ...prev[keys[0] as keyof QuoteSubmissionData],
+            ...(typeof parentValue === 'object' && parentValue !== null ? parentValue : {}),
             [keys[1]]: value,
           },
         };

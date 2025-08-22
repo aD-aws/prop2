@@ -1,6 +1,6 @@
 import { AIAgentService } from './aiAgentService';
 import { PromptManager } from './promptManager';
-import { ProjectType, SoWDocument, BuilderReviewResult, BuilderReviewIssue, BuilderReviewRecommendation } from '../types';
+import { ProjectType, SoWDocument, BuilderReviewResult, BuilderReviewIssue, BuilderReviewRecommendation, ProjectContext, Property } from '../types';
 
 export interface BuilderReviewAnalysis {
   overallScore: number; // 0-100 quality score
@@ -17,26 +17,7 @@ export interface BuilderReviewAnalysis {
   reviewAgentType: string;
 }
 
-export interface BuilderReviewIssue {
-  id: string;
-  category: 'missing_work' | 'unrealistic_timeline' | 'regulatory' | 'cost_accuracy' | 'material_spec' | 'sequencing';
-  severity: 'critical' | 'major' | 'minor';
-  title: string;
-  description: string;
-  location: string; // section of SoW where issue was found
-  impact: string;
-}
 
-export interface BuilderReviewRecommendation {
-  id: string;
-  issueId: string;
-  type: 'addition' | 'modification' | 'removal' | 'clarification';
-  title: string;
-  description: string;
-  suggestedText?: string;
-  reasoning: string;
-  priority: 'high' | 'medium' | 'low';
-}
 
 export class BuilderReviewAgentService {
   private aiAgentService: AIAgentService;
@@ -62,24 +43,39 @@ export class BuilderReviewAgentService {
       
       // Get specialized prompt for this project type
       const reviewPrompt = await this.promptManager.getPrompt(
-        `builder-review-${reviewAgentType}`,
-        'latest'
+        `builder-review-${reviewAgentType}`
       );
 
       // Prepare context for AI review
-      const reviewContext = {
-        sowDocument,
+      const reviewContext: ProjectContext = {
+        projectId: sowDocument.projectId,
         projectType,
-        propertyDetails,
-        reviewFocus: this.getReviewFocus(projectType)
+        property: {
+          id: 'temp-property-id',
+          address: propertyDetails,
+          councilArea: 'Unknown',
+          isListedBuilding: false,
+          isInConservationArea: false,
+          planningHistory: [],
+          buildingRegulations: []
+        },
+        userResponses: {
+          sowDocument,
+          propertyDetails,
+          reviewFocus: this.getReviewFocus(projectType)
+        },
+        previousAgentResponses: []
       };
 
       // Invoke AI Builder Review Agent
-      const aiResponse = await this.aiAgentService.invokeAgent(
-        `builder-review-${reviewAgentType}`,
-        reviewPrompt,
-        reviewContext
-      );
+      const aiResponse = await this.aiAgentService.invokeAgent({
+        agentId: `builder-review-${reviewAgentType}`,
+        context: reviewContext,
+        requestType: 'analyze_project',
+        additionalData: {
+          prompt: reviewPrompt?.template || 'Review the SoW document for quality and completeness'
+        }
+      });
 
       // Parse and structure the review results
       const analysis = await this.parseReviewResponse(aiResponse, reviewAgentType);
@@ -91,7 +87,7 @@ export class BuilderReviewAgentService {
 
     } catch (error) {
       console.error('Error in SoW review:', error);
-      throw new Error(`Failed to review SoW: ${error.message}`);
+      throw new Error(`Failed to review SoW: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -344,24 +340,32 @@ export class BuilderReviewAgentService {
 
       // Generate improved SoW using AI with recommendations
       const improvementPrompt = await this.promptManager.getPrompt(
-        'sow-improvement',
-        'latest'
+        'sow-improvement'
       );
 
-      const improvementContext = {
-        originalSoW: sowDocument,
-        recommendations: recommendationsToApply,
-        reviewAnalysis: reviewResults
+      // Create a minimal ProjectContext - we'll put the improvement data in additionalData
+      const projectContext = {
+        projectId,
+        projectType: 'others' as ProjectType, // Default since we don't have this info
+        property: {} as Property, // Empty property object
+        userResponses: {},
+        previousAgentResponses: []
       };
 
-      const aiResponse = await this.aiAgentService.invokeAgent(
-        'sow-improvement',
-        improvementPrompt,
-        improvementContext
-      );
+      const aiResponse = await this.aiAgentService.invokeAgent({
+        agentId: 'sow-improvement',
+        context: projectContext,
+        requestType: 'generate_sow',
+        additionalData: { 
+          prompt: improvementPrompt,
+          originalSoW: sowDocument,
+          recommendations: recommendationsToApply,
+          reviewAnalysis: reviewResults
+        }
+      });
 
       // Parse improved SoW
-      const improvedSoW = JSON.parse(aiResponse.content);
+      const improvedSoW = JSON.parse(aiResponse.response);
 
       return {
         ...sowDocument,
@@ -374,7 +378,7 @@ export class BuilderReviewAgentService {
 
     } catch (error) {
       console.error('Error applying recommendations:', error);
-      throw new Error(`Failed to apply recommendations: ${error.message}`);
+      throw new Error(`Failed to apply recommendations: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }

@@ -9,7 +9,7 @@ export default function BuilderDashboardPage() {
   const { user } = useAuth();
 
   return (
-    <ProtectedRoute requiredUserType="builder">
+    <ProtectedRoute allowedRoles={['builder']}>
       <div className="min-h-screen bg-gray-50">
         {user && <BuilderDashboard builderId={user.id} />}
       </div>

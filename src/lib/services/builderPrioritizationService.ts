@@ -4,7 +4,8 @@ import {
   BuilderLeadPriority, 
   BuilderRating, 
   ProjectType,
-  BuilderProfile 
+  BuilderProfile,
+  User
 } from '../types';
 import { feedbackService } from './feedbackService';
 
@@ -35,7 +36,7 @@ export class BuilderPrioritizationService {
         const rating = await feedbackService.getBuilderRating(builder.id);
         const metrics = await this.getBuilderMetrics(builder.id);
         
-        const priority = this.calculateBuilderPriority(builder, rating, metrics);
+        const priority = this.calculateBuilderPriority(builder.id, builder.profile, rating, metrics);
         builderPriorities.push(priority);
       }
 
@@ -55,7 +56,7 @@ export class BuilderPrioritizationService {
   private async getEligibleBuilders(
     postcode: string,
     projectType: ProjectType
-  ): Promise<BuilderProfile[]> {
+  ): Promise<(User & { profile: BuilderProfile })[]> {
     try {
       // Extract postcode area (first part before space)
       const postcodeArea = postcode.split(' ')[0];
@@ -74,7 +75,7 @@ export class BuilderPrioritizationService {
       });
 
       const result = await docClient.send(command);
-      return result.Items as BuilderProfile[] || [];
+      return result.Items as (User & { profile: BuilderProfile })[] || [];
     } catch (error) {
       console.error('Error getting eligible builders:', error);
       // Fallback to scan if index query fails
@@ -88,7 +89,7 @@ export class BuilderPrioritizationService {
   private async fallbackGetEligibleBuilders(
     postcode: string,
     projectType: ProjectType
-  ): Promise<BuilderProfile[]> {
+  ): Promise<(User & { profile: BuilderProfile })[]> {
     try {
       const postcodeArea = postcode.split(' ')[0];
       
@@ -103,7 +104,7 @@ export class BuilderPrioritizationService {
       });
 
       const result = await docClient.send(command);
-      return result.Items as BuilderProfile[] || [];
+      return result.Items as (User & { profile: BuilderProfile })[] || [];
     } catch (error) {
       console.error('Error in fallback get eligible builders:', error);
       return [];
@@ -148,6 +149,7 @@ export class BuilderPrioritizationService {
    * Calculate builder priority score
    */
   private calculateBuilderPriority(
+    builderId: string,
     builder: BuilderProfile,
     rating: BuilderRating | null,
     metrics: {
@@ -186,7 +188,7 @@ export class BuilderPrioritizationService {
     priority += activityScore;
 
     return {
-      builderId: builder.id,
+      builderId: builderId,
       priority: Math.round(priority),
       rating: rating?.overallRating || 0,
       totalReviews: rating?.totalReviews || 0,
@@ -244,7 +246,7 @@ export class BuilderPrioritizationService {
 
       const rating = await feedbackService.getBuilderRating(builderId);
       const metrics = await this.getBuilderMetrics(builderId);
-      const priority = this.calculateBuilderPriority(builder, rating, metrics);
+      const priority = this.calculateBuilderPriority(builderId, builder, rating, metrics);
 
       // Calculate individual component scores
       const ratingScore = rating ? (rating.overallRating / 5) * 40 + Math.min(rating.totalReviews / 10, 1) * 10 : 20;

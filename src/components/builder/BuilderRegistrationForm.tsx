@@ -112,7 +112,7 @@ export function BuilderRegistrationForm({ builderId, onSubmit, onCancel }: Build
         return {
           ...prev,
           [keys[0]]: {
-            ...prev[keys[0] as keyof BuilderRegistrationData],
+            ...(prev[keys[0] as keyof BuilderRegistrationData] as object || {}),
             [keys[1]]: value,
           },
         };

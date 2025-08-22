@@ -345,7 +345,7 @@ export function BuilderProjectDashboard({
         <div className="flex space-x-2">
           <Button
             onClick={() => setCurrentView('sow')}
-            variant={currentView === 'sow' ? 'default' : 'outline'}
+            variant={currentView === 'sow' ? 'primary' : 'outline'}
             size="sm"
           >
             View SoW
@@ -353,7 +353,7 @@ export function BuilderProjectDashboard({
           
           <Button
             onClick={() => setCurrentView('quote')}
-            variant={currentView === 'quote' ? 'default' : 'outline'}
+            variant={currentView === 'quote' ? 'primary' : 'outline'}
             size="sm"
           >
             {quotes.length > 0 ? 'Edit Quote' : 'Submit Quote'}
@@ -362,7 +362,7 @@ export function BuilderProjectDashboard({
           {quotes.length > 0 && (
             <Button
               onClick={() => setCurrentView('analysis')}
-              variant={currentView === 'analysis' ? 'default' : 'outline'}
+              variant={currentView === 'analysis' ? 'primary' : 'outline'}
               size="sm"
             >
               View Analysis
@@ -382,12 +382,15 @@ export function BuilderProjectDashboard({
 
       {currentView === 'quote' && (
         <QuoteSubmissionForm
-          projectId={selectedProject.id}
+          project={selectedProject}
           builderId={builderId}
-          onSubmitSuccess={(quoteId) => {
+          onSubmit={async (quoteData) => {
+            // Handle quote submission
+            console.log('Quote submitted:', quoteData);
             loadProjectQuotes();
             setCurrentView('analysis');
           }}
+          onCancel={() => setCurrentView('analysis')}
         />
       )}
 

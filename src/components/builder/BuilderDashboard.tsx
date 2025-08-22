@@ -28,6 +28,7 @@ export function BuilderDashboard({ builderId }: BuilderDashboardProps) {
       // For now, we'll simulate the data
       const mockData: BuilderDashboardData = {
         builder: {
+          id: 'builder_123',
           firstName: 'John',
           lastName: 'Smith',
           companyName: 'Smith Construction Ltd',

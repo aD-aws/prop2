@@ -1,5 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand, GetCommand, UpdateCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { Select } from '@aws-sdk/client-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import { MarketingCampaign, PlanningApplication } from './planningPermissionDataMiningService';
 import { gdprComplianceService } from './gdprComplianceService';
@@ -78,10 +79,10 @@ export class MarketingCampaignService {
       ...campaign
     };
 
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.campaignTableName,
       Item: newCampaign
-    }).promise();
+    }));
 
     return newCampaign;
   }
@@ -96,10 +97,10 @@ export class MarketingCampaignService {
       ...template
     };
 
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.templateTableName,
       Item: newTemplate
-    }).promise();
+    }));
 
     return newTemplate;
   }
@@ -118,10 +119,10 @@ export class MarketingCampaignService {
       ...audience
     };
 
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.audienceTableName,
       Item: newAudience
-    }).promise();
+    }));
 
     return newAudience;
   }
@@ -222,7 +223,7 @@ export class MarketingCampaignService {
   async recordInteraction(campaignId: string, prospectId: string, interactionType: 'open' | 'click' | 'convert' | 'opt_out' | 'complain'): Promise<void> {
     try {
       // Record the interaction
-      await dynamodb.put({
+      await dynamodb.send(new PutCommand({
         TableName: 'CampaignInteractions',
         Item: {
           id: uuidv4(),
@@ -233,7 +234,7 @@ export class MarketingCampaignService {
           ipAddress: '', // Would be captured from request
           userAgent: ''  // Would be captured from request
         }
-      }).promise();
+      }));
 
       // Update metrics
       await this.updateMetrics(campaignId, interactionType);
@@ -288,10 +289,10 @@ export class MarketingCampaignService {
    */
   async getCampaignMetrics(campaignId: string): Promise<CampaignMetrics | null> {
     try {
-      const result = await dynamodb.get({
+      const result = await dynamodb.send(new GetCommand({
         TableName: this.metricsTableName,
         Key: { campaignId }
-      }).promise();
+      }));
 
       return result.Item as CampaignMetrics || null;
     } catch (error) {
@@ -374,12 +375,12 @@ export class MarketingCampaignService {
 
     const params = {
       TableName: 'PlanningApplications',
-      Select: 'COUNT',
+      Select: Select.COUNT,
       FilterExpression: filterExpression,
       ExpressionAttributeValues: expressionValues
     };
 
-    const result = await dynamodb.scan(params).promise();
+    const result = await dynamodb.send(new ScanCommand(params));
     return result.Count || 0;
   }
 
@@ -401,7 +402,7 @@ export class MarketingCampaignService {
       ExpressionAttributeValues: expressionValues
     };
 
-    const result = await dynamodb.scan(params).promise();
+    const result = await dynamodb.send(new ScanCommand(params));
     return result.Items as PlanningApplication[] || [];
   }
 
@@ -504,7 +505,7 @@ export class MarketingCampaignService {
   }
 
   private async recordDelivery(campaignId: string, prospectId: string, channel: string, status: string): Promise<void> {
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.deliveryTableName,
       Item: {
         id: uuidv4(),
@@ -514,11 +515,11 @@ export class MarketingCampaignService {
         status,
         timestamp: new Date().toISOString()
       }
-    }).promise();
+    }));
   }
 
   private async updateProspectContactTracking(prospectId: string): Promise<void> {
-    await dynamodb.update({
+    await dynamodb.send(new UpdateCommand({
       TableName: 'PlanningApplications',
       Key: { id: prospectId },
       UpdateExpression: 'SET lastContactedAt = :date, contactAttempts = contactAttempts + :inc',
@@ -526,46 +527,46 @@ export class MarketingCampaignService {
         ':date': new Date().toISOString(),
         ':inc': 1
       }
-    }).promise();
+    }));
   }
 
   private async storeMetrics(metrics: CampaignMetrics): Promise<void> {
-    await dynamodb.put({
+    await dynamodb.send(new PutCommand({
       TableName: this.metricsTableName,
       Item: metrics
-    }).promise();
+    }));
   }
 
   private async updateCampaignStats(campaignId: string, sentCount: number): Promise<void> {
-    await dynamodb.update({
+    await dynamodb.send(new UpdateCommand({
       TableName: this.campaignTableName,
       Key: { id: campaignId },
       UpdateExpression: 'SET sentCount = sentCount + :count',
       ExpressionAttributeValues: {
         ':count': sentCount
       }
-    }).promise();
+    }));
   }
 
   private async updateMetrics(campaignId: string, interactionType: string): Promise<void> {
     const updateExpression = `SET ${interactionType} = ${interactionType} + :inc`;
     
-    await dynamodb.update({
+    await dynamodb.send(new UpdateCommand({
       TableName: this.metricsTableName,
       Key: { campaignId },
       UpdateExpression: updateExpression,
       ExpressionAttributeValues: {
         ':inc': 1
       }
-    }).promise();
+    }));
   }
 
   private async getCampaign(id: string): Promise<MarketingCampaign | null> {
     try {
-      const result = await dynamodb.get({
+      const result = await dynamodb.send(new GetCommand({
         TableName: this.campaignTableName,
         Key: { id }
-      }).promise();
+      }));
 
       return result.Item as MarketingCampaign || null;
     } catch (error) {
@@ -575,10 +576,10 @@ export class MarketingCampaignService {
 
   private async getTemplate(id: string): Promise<CampaignTemplate | null> {
     try {
-      const result = await dynamodb.get({
+      const result = await dynamodb.send(new GetCommand({
         TableName: this.templateTableName,
         Key: { id }
-      }).promise();
+      }));
 
       return result.Item as CampaignTemplate || null;
     } catch (error) {
@@ -588,10 +589,10 @@ export class MarketingCampaignService {
 
   private async getAudience(id: string): Promise<CampaignAudience | null> {
     try {
-      const result = await dynamodb.get({
+      const result = await dynamodb.send(new GetCommand({
         TableName: this.audienceTableName,
         Key: { id }
-      }).promise();
+      }));
 
       return result.Item as CampaignAudience || null;
     } catch (error) {
@@ -601,10 +602,10 @@ export class MarketingCampaignService {
 
   private async getProspect(id: string): Promise<PlanningApplication | null> {
     try {
-      const result = await dynamodb.get({
+      const result = await dynamodb.send(new GetCommand({
         TableName: 'PlanningApplications',
         Key: { id }
-      }).promise();
+      }));
 
       return result.Item as PlanningApplication || null;
     } catch (error) {
@@ -621,7 +622,7 @@ export class MarketingCampaignService {
       }
     };
 
-    const result = await dynamodb.scan(params).promise();
+    const result = await dynamodb.send(new ScanCommand(params));
     return result.Items || [];
   }
 

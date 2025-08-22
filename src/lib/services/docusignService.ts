@@ -26,7 +26,7 @@ export interface SigningResponse {
 }
 
 export class DocuSignService {
-  private config: DocuSignConfig;
+  private config!: DocuSignConfig;
   private isEnabled: boolean;
 
   constructor() {

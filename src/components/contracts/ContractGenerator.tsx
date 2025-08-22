@@ -148,10 +148,6 @@ export const ContractGenerator: React.FC<ContractGeneratorProps> = ({
           <h4 className="font-medium text-gray-900 mb-3">Contract Summary</h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-600">Project Type:</span>
-              <span className="ml-2 font-medium">{sowDocument.projectType}</span>
-            </div>
-            <div>
               <span className="text-gray-600">Total Amount:</span>
               <span className="ml-2 font-medium">£{selectedQuote.pricing.totalAmount.toLocaleString()}</span>
             </div>

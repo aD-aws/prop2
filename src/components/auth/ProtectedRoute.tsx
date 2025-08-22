@@ -69,6 +69,8 @@ export function ProtectedRoute({
   return <>{children}</>;
 }
 
+
+
 // Higher-order component for role-based access control
 export function withAuth<P extends object>(
   Component: React.ComponentType<P>,
