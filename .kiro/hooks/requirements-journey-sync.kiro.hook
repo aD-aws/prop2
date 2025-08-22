@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Requirements to Journey Sync",
+  "description": "Automatically updates the user-journey-visualization.md file whenever requirements.md is modified to keep the user journey documentation in sync with requirement changes",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "requirements.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The requirements.md file has been updated. Please review the changes and update the user-journey-visualization.md file accordingly to reflect any new requirements, modified user flows, or updated business logic. Ensure the user journey visualization remains accurate and comprehensive based on the current requirements."
+  }
+}
