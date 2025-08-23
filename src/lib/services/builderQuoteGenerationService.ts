@@ -7,9 +7,28 @@ import { aiService } from './aiService';
 import { sowGenerationService } from './sowGenerationService';
 import { timelineOptimizationService } from './timelineOptimizationService';
 import { builderSubscriptionService } from './builderSubscriptionService';
+import { awsConfig } from '../config/aws';
 
-const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const sesClient = new SESClient({});
+// Initialize AWS clients with proper configuration
+const dynamoClient = DynamoDBDocumentClient.from(new DynamoDBClient({
+  region: awsConfig.region,
+  ...(process.env.NODE_ENV === 'development' && {
+    credentials: process.env.AWS_ACCESS_KEY_ID ? undefined : {
+      accessKeyId: 'mock',
+      secretAccessKey: 'mock',
+    },
+  }),
+}));
+
+const sesClient = new SESClient({
+  region: awsConfig.region,
+  ...(process.env.NODE_ENV === 'development' && {
+    credentials: process.env.AWS_ACCESS_KEY_ID ? undefined : {
+      accessKeyId: 'mock',
+      secretAccessKey: 'mock',
+    },
+  }),
+});
 
 export interface BuilderQuoteProject {
   id: string;

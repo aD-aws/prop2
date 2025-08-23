@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '../../components/ui/Button';
 import { gdprComplianceService } from '../../lib/services/gdprComplianceService';
 import { planningPermissionDataMiningService } from '../../lib/services/planningPermissionDataMiningService';
 
-export default function OptOutPage() {
+function OptOutContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -319,5 +319,24 @@ export default function OptOutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OptOutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-600">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <OptOutContent />
+    </Suspense>
   );
 }

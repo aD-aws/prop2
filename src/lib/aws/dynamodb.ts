@@ -12,9 +12,17 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { awsConfig } from '../config/aws';
 
-// Initialize DynamoDB client
+// Initialize DynamoDB client with proper configuration
 const client = new DynamoDBClient({
   region: awsConfig.region,
+  // In development, use local credentials or mock
+  ...(process.env.NODE_ENV === 'development' && {
+    endpoint: process.env.DYNAMODB_ENDPOINT,
+    credentials: process.env.AWS_ACCESS_KEY_ID ? undefined : {
+      accessKeyId: 'mock',
+      secretAccessKey: 'mock',
+    },
+  }),
 });
 
 const docClient = DynamoDBDocumentClient.from(client);

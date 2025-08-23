@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { BuilderSelectionService, BuilderSelection, MeetingFeedback } from '@/lib/services/builderSelectionService';
 import { QuoteManagementService } from '@/lib/services/quoteManagementService';
 import { Quote } from '@/lib/types';
 
-export default function MeetingPage() {
+function MeetingContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const selectionId = searchParams.get('selectionId');
@@ -631,5 +631,24 @@ export default function MeetingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MeetingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-600">Loading meeting details...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <MeetingContent />
+    </Suspense>
   );
 }

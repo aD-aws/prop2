@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Quote } from '@/lib/types';
 import { QuoteManagementService } from '@/lib/services/quoteManagementService';
 import { BuilderSelectionService } from '@/lib/services/builderSelectionService';
 import { QuoteComparisonDashboard } from '@/components/quotes/QuoteComparisonDashboard';
 
-export default function QuoteComparisonPage() {
+function QuoteComparisonContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const projectId = searchParams.get('projectId');
@@ -191,5 +191,24 @@ export default function QuoteComparisonPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QuoteComparisonPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-600">Loading quotes...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <QuoteComparisonContent />
+    </Suspense>
   );
 }

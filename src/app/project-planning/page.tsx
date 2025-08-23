@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ProjectType } from '../../lib/types';
 import { QuestionnaireFlow } from '../../components/questionnaire/QuestionnaireFlow';
@@ -10,7 +10,7 @@ import { Button } from '../../components/ui/Button';
 
 type PlanningPhase = 'questionnaire' | 'generation' | 'completed';
 
-export default function ProjectPlanningPage() {
+function ProjectPlanningContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -287,5 +287,24 @@ const CompletedSoWView: React.FC<CompletedSoWViewProps> = ({
         </div>
       </div>
     </div>
+  );
+};
+
+export default function ProjectPlanningPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-600">Loading project planning...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <ProjectPlanningContent />
+    </Suspense>
   );
 };
