@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { leadManagementService } from '@/lib/services/leadManagementService';
-import { paymentService } from '@/lib/services/paymentService';
 
 interface Lead {
   id: string;

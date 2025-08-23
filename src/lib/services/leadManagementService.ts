@@ -60,17 +60,23 @@ interface LeadDistributionCriteria {
 }
 
 class LeadManagementService {
-  private dynamoClient: DynamoDBDocumentClient;
-  private eventBridge: EventBridge;
+  private dynamoClient: DynamoDBDocumentClient | null = null;
+  private eventBridge: EventBridge | null = null;
   private readonly LEAD_OFFER_TIMEOUT_HOURS = 12;
   private readonly BUILDERS_TABLE = 'Builders';
   private readonly LEADS_TABLE = 'Leads';
   private readonly LEAD_OFFERS_TABLE = 'LeadOffers';
 
   constructor() {
-    const client = new DynamoDBClient({ region: process.env.AWS_REGION });
-    this.dynamoClient = DynamoDBDocumentClient.from(client);
-    this.eventBridge = new EventBridge({ region: process.env.AWS_REGION });
+    // Initialize clients lazily to avoid build-time issues
+  }
+
+  private initializeClients() {
+    if (!this.dynamoClient && typeof window === 'undefined') {
+      const client = new DynamoDBClient({ region: process.env.AWS_REGION });
+      this.dynamoClient = DynamoDBDocumentClient.from(client);
+      this.eventBridge = new EventBridge({ region: process.env.AWS_REGION });
+    }
   }
 
   /**
@@ -84,6 +90,12 @@ class LeadManagementService {
     estimatedBudget: number;
     description: string;
   }): Promise<Lead> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     const leadId = `lead_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     // Calculate lead price based on project value (e.g., 2% of estimated budget, min £50, max £500)
@@ -118,6 +130,12 @@ class LeadManagementService {
    * Get eligible builders for a lead based on postcode, project type, and ratings
    */
   async getEligibleBuilders(criteria: LeadDistributionCriteria): Promise<Builder[]> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     // Query builders by postcode and project type
     const response = await this.dynamoClient.send(new QueryCommand({
       TableName: this.BUILDERS_TABLE,
@@ -176,6 +194,12 @@ class LeadManagementService {
    * Offer a lead to a specific builder
    */
   async offerLeadToBuilder(leadId: string, builderId: string): Promise<LeadOffer> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     const offerId = `offer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const expiresAt = new Date(Date.now() + this.LEAD_OFFER_TIMEOUT_HOURS * 60 * 60 * 1000);
 
@@ -222,6 +246,12 @@ class LeadManagementService {
    * Builder accepts a lead offer
    */
   async acceptLeadOffer(offerId: string, builderId: string): Promise<{ success: boolean; paymentIntentId?: string; error?: string }> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      return { success: false, error: 'Service not available' };
+    }
+
     const offer = await this.getLeadOffer(offerId);
     if (!offer) {
       return { success: false, error: 'Offer not found' };
@@ -282,6 +312,12 @@ class LeadManagementService {
    * Complete lead purchase after successful payment
    */
   async completeLeadPurchase(paymentIntentId: string): Promise<void> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     // Find the offer by payment intent ID
     const response = await this.dynamoClient.send(new QueryCommand({
       TableName: this.LEAD_OFFERS_TABLE,
@@ -346,6 +382,12 @@ class LeadManagementService {
    * Handle expired lead offers
    */
   async handleExpiredOffer(offerId: string): Promise<void> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      return;
+    }
+
     const offer = await this.getLeadOffer(offerId);
     if (!offer || offer.status !== 'pending') {
       return;
@@ -406,6 +448,12 @@ class LeadManagementService {
    * Get builder's available leads in their area
    */
   async getBuilderAvailableLeads(builderId: string): Promise<Lead[]> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      return [];
+    }
+
     const builder = await this.getBuilder(builderId);
     if (!builder) {
       return [];
@@ -433,6 +481,12 @@ class LeadManagementService {
    * Get builder's current lead offers
    */
   async getBuilderCurrentOffers(builderId: string): Promise<LeadOffer[]> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      return [];
+    }
+
     const response = await this.dynamoClient.send(new QueryCommand({
       TableName: this.LEAD_OFFERS_TABLE,
       IndexName: 'BuilderStatusIndex',
@@ -452,6 +506,12 @@ class LeadManagementService {
 
   // Helper methods
   private async getLead(leadId: string): Promise<Lead | null> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      return null;
+    }
+
     const response = await this.dynamoClient.send(new GetCommand({
       TableName: this.LEADS_TABLE,
       Key: { id: leadId }
@@ -460,6 +520,12 @@ class LeadManagementService {
   }
 
   private async getLeadOffer(offerId: string): Promise<LeadOffer | null> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      return null;
+    }
+
     const response = await this.dynamoClient.send(new GetCommand({
       TableName: this.LEAD_OFFERS_TABLE,
       Key: { id: offerId }
@@ -468,6 +534,12 @@ class LeadManagementService {
   }
 
   private async getBuilder(builderId: string): Promise<Builder | null> {
+    this.initializeClients();
+    
+    if (!this.dynamoClient) {
+      return null;
+    }
+
     const response = await this.dynamoClient.send(new GetCommand({
       TableName: this.BUILDERS_TABLE,
       Key: { id: builderId }
@@ -476,6 +548,13 @@ class LeadManagementService {
   }
 
   private async scheduleOfferExpiration(offerId: string): Promise<void> {
+    this.initializeClients();
+    
+    if (!this.eventBridge) {
+      console.warn('EventBridge client not available, skipping offer expiration scheduling');
+      return;
+    }
+
     // Schedule EventBridge event for offer expiration
     await this.eventBridge.putEvents({
       Entries: [{

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BuilderLeadPriority, ProjectType } from '../../lib/types';
 import { builderPrioritizationService } from '../../lib/services/builderPrioritizationService';
 
@@ -9,14 +9,14 @@ interface LeadDistributionDashboardProps {
 }
 
 export const LeadDistributionDashboard: React.FC<LeadDistributionDashboardProps> = ({
-  onDistributeLeads
+  onDistributeLeads = () => {}
 }) => {
   const [testPostcode, setTestPostcode] = useState('SW1A 1AA');
   const [testProjectType, setTestProjectType] = useState<ProjectType>('kitchen_full_refit');
   const [prioritizedBuilders, setPrioritizedBuilders] = useState<BuilderLeadPriority[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedBuilder, setSelectedBuilder] = useState<string | null>(null);
-  const [priorityExplanation, setPriorityExplanation] = useState<any>(null);
+  const [priorityExplanation, setPriorityExplanation] = useState<Record<string, unknown> | null>(null);
 
   const projectTypes: { value: ProjectType; label: string }[] = [
     { value: 'kitchen_full_refit', label: 'Kitchen Full Refit' },
@@ -244,34 +244,34 @@ export const LeadDistributionDashboard: React.FC<LeadDistributionDashboardProps>
                 </h3>
                 <div className="text-center mb-4">
                   <div className="text-3xl font-bold text-blue-600">
-                    {priorityExplanation.totalScore}
+                    {(priorityExplanation as any)?.totalScore}
                   </div>
                   <div className="text-sm text-gray-600">Total Priority Score</div>
                 </div>
                 
                 <div className="space-y-3">
                   <PriorityBar 
-                    score={priorityExplanation.breakdown.rating} 
+                    score={(priorityExplanation as any)?.breakdown?.rating || 0} 
                     maxScore={50} 
                     label="Rating & Reviews" 
                   />
                   <PriorityBar 
-                    score={priorityExplanation.breakdown.responseTime} 
+                    score={(priorityExplanation as any)?.breakdown?.responseTime || 0} 
                     maxScore={20} 
                     label="Response Time" 
                   />
                   <PriorityBar 
-                    score={priorityExplanation.breakdown.acceptanceRate} 
+                    score={(priorityExplanation as any)?.breakdown?.acceptanceRate || 0} 
                     maxScore={15} 
                     label="Acceptance Rate" 
                   />
                   <PriorityBar 
-                    score={priorityExplanation.breakdown.completionRate} 
+                    score={(priorityExplanation as any)?.breakdown?.completionRate || 0} 
                     maxScore={15} 
                     label="Completion Rate" 
                   />
                   <PriorityBar 
-                    score={priorityExplanation.breakdown.activity} 
+                    score={(priorityExplanation as any)?.breakdown?.activity || 0} 
                     maxScore={10} 
                     label="Recent Activity" 
                   />

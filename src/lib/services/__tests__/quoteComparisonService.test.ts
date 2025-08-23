@@ -112,9 +112,9 @@ describe('QuoteComparisonService', () => {
 
       // Mock builder profiles
       mockDynamoDBService.getItem
-        .mockResolvedValueOnce({ Item: { id: 'builder-1', completedProjects: 15, rating: 4.5 } })
-        .mockResolvedValueOnce({ Item: { id: 'builder-2', completedProjects: 8, rating: 4.2 } })
-        .mockResolvedValueOnce({ Item: { id: 'builder-3', completedProjects: 20, rating: 4.8 } });
+        .mockResolvedValueOnce({ success: true, Item: { id: 'builder-1', completedProjects: 15, rating: 4.5 } })
+        .mockResolvedValueOnce({ success: true, Item: { id: 'builder-2', completedProjects: 8, rating: 4.2 } })
+        .mockResolvedValueOnce({ success: true, Item: { id: 'builder-3', completedProjects: 20, rating: 4.8 } });
 
       const result = await QuoteComparisonService.compareQuotes(mockProjectId, quotes);
 

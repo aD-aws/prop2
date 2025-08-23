@@ -1,39 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TermsManagementDashboard } from '@/components/terms/TermsManagementDashboard';
-import { TermsAndConditionsViewer } from '@/components/terms/TermsAndConditionsViewer';
-import { TermsComparisonView } from '@/components/terms/TermsComparisonView';
-import { 
-  termsConditionsService, 
-  TermsAndConditions, 
-  TermsAmendment, 
-  ProjectTerms 
-} from '@/lib/services/termsConditionsService';
 
 interface TermsPageProps {
-  params: {
+  params: Promise<{
     projectId: string;
-  };
+  }>;
 }
 
 export default function TermsPage({ params }: TermsPageProps) {
-  const { projectId } = params;
+  const [projectId, setProjectId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [projectData, setProjectData] = useState<any>(null);
+  const [projectData, setProjectData] = useState<Record<string, unknown> | null>(null);
   const [userType, setUserType] = useState<'homeowner' | 'builder'>('homeowner');
   const [userId, setUserId] = useState<string>('');
 
-  useEffect(() => {
-    loadProjectData();
-    // In a real app, get user info from auth context
-    setUserId('user-123');
-    setUserType('homeowner');
-  }, [projectId]);
-
-  const loadProjectData = async () => {
+  const loadProjectData = useCallback(async () => {
+    if (!projectId) return;
+    
     try {
       setLoading(true);
       setError(null);
@@ -54,7 +40,23 @@ export default function TermsPage({ params }: TermsPageProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    // Resolve the params promise
+    params.then((resolvedParams) => {
+      setProjectId(resolvedParams.projectId);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (projectId) {
+      loadProjectData();
+      // In a real app, get user info from auth context
+      setUserId('user-123');
+      setUserType('homeowner');
+    }
+  }, [projectId, loadProjectData]);
 
   if (loading) {
     return (
@@ -111,7 +113,7 @@ export default function TermsPage({ params }: TermsPageProps) {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Terms and Conditions</h1>
               <p className="text-gray-600">
-                Project: {projectData.projectType.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                Project: {(projectData.projectType as string)?.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -120,7 +122,7 @@ export default function TermsPage({ params }: TermsPageProps) {
                 projectData.status === 'terms-review' ? 'bg-yellow-100 text-yellow-800' :
                 'bg-gray-100 text-gray-800'
               }`}>
-                {projectData.status.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                {(projectData.status as string)?.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
               </span>
             </div>
           </div>
@@ -130,7 +132,7 @@ export default function TermsPage({ params }: TermsPageProps) {
       <div className="max-w-6xl mx-auto px-6 py-8">
         <TermsManagementDashboard
           projectId={projectId}
-          projectType={projectData.projectType}
+          projectType={projectData.projectType as string}
           userId={userId}
           userType={userType}
         />

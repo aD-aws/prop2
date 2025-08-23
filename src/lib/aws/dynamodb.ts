@@ -12,20 +12,26 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { awsConfig } from '../config/aws';
 
-// Initialize DynamoDB client with proper configuration
-const client = new DynamoDBClient({
-  region: awsConfig.region,
-  // In development, use local credentials or mock
-  ...(process.env.NODE_ENV === 'development' && {
-    endpoint: process.env.DYNAMODB_ENDPOINT,
-    credentials: process.env.AWS_ACCESS_KEY_ID ? undefined : {
-      accessKeyId: 'mock',
-      secretAccessKey: 'mock',
-    },
-  }),
-});
+// Initialize DynamoDB client lazily to avoid build-time issues
+let client: DynamoDBClient | null = null;
+let docClient: DynamoDBDocumentClient | null = null;
 
-const docClient = DynamoDBDocumentClient.from(client);
+function initializeDynamoClient() {
+  if (!client && typeof window === 'undefined') {
+    client = new DynamoDBClient({
+      region: awsConfig.region,
+      // In development, use local credentials or mock
+      ...(process.env.NODE_ENV === 'development' && {
+        endpoint: process.env.DYNAMODB_ENDPOINT,
+        credentials: process.env.AWS_ACCESS_KEY_ID ? undefined : {
+          accessKeyId: 'mock',
+          secretAccessKey: 'mock',
+        },
+      }),
+    });
+    docClient = DynamoDBDocumentClient.from(client);
+  }
+}
 
 export class DynamoDBService {
   
@@ -33,6 +39,12 @@ export class DynamoDBService {
    * Put an item into a table
    */
   static async putItem(tableName: string, item: Record<string, unknown>) {
+    initializeDynamoClient();
+    
+    if (!docClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     try {
       const command = new PutCommand({
         TableName: tableName,
@@ -58,6 +70,12 @@ export class DynamoDBService {
    * Get an item from a table
    */
   static async getItem(tableName: string, key: Record<string, unknown>) {
+    initializeDynamoClient();
+    
+    if (!docClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     try {
       const command = new GetCommand({
         TableName: tableName,
@@ -86,6 +104,12 @@ export class DynamoDBService {
     key: Record<string, unknown>, 
     updates: Record<string, unknown>
   ) {
+    initializeDynamoClient();
+    
+    if (!docClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     try {
       const updateExpression = Object.keys(updates)
         .map(key => `#${key} = :${key}`)
@@ -128,6 +152,12 @@ export class DynamoDBService {
    * Delete an item from a table
    */
   static async deleteItem(tableName: string, key: Record<string, unknown>) {
+    initializeDynamoClient();
+    
+    if (!docClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     try {
       const command = new DeleteCommand({
         TableName: tableName,
@@ -154,6 +184,12 @@ export class DynamoDBService {
     keyCondition: Record<string, unknown>,
     limit?: number
   ) {
+    initializeDynamoClient();
+    
+    if (!docClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     try {
       const keyConditionExpression = Object.keys(keyCondition)
         .map(key => `#${key} = :${key}`)
@@ -193,6 +229,12 @@ export class DynamoDBService {
    * Scan table
    */
   static async scanTable(tableName: string) {
+    initializeDynamoClient();
+    
+    if (!docClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     try {
       const command = new ScanCommand({
         TableName: tableName,
@@ -221,6 +263,12 @@ export class DynamoDBService {
     expressionAttributeValues?: Record<string, unknown>,
     limit?: number
   ) {
+    initializeDynamoClient();
+    
+    if (!docClient) {
+      throw new Error('DynamoDB client not available');
+    }
+
     try {
       const command = new ScanCommand({
         TableName: tableName,

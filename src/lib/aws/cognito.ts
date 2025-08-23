@@ -16,16 +16,23 @@ import {
 import { awsConfig } from '../config/aws';
 import type { UserType } from '../types';
 
-// Configure Amplify
-Amplify.configure({
-  Auth: {
-    Cognito: {
-      userPoolId: awsConfig.cognito.userPoolId,
-      userPoolClientId: awsConfig.cognito.userPoolClientId,
-      identityPoolId: awsConfig.cognito.identityPoolId,
-    }
+// Configure Amplify only on client side
+let isConfigured = false;
+
+function configureAmplify() {
+  if (!isConfigured && typeof window !== 'undefined') {
+    Amplify.configure({
+      Auth: {
+        Cognito: {
+          userPoolId: awsConfig.cognito.userPoolId,
+          userPoolClientId: awsConfig.cognito.userPoolClientId,
+          identityPoolId: awsConfig.cognito.identityPoolId,
+        }
+      }
+    });
+    isConfigured = true;
   }
-});
+}
 
 export interface SignUpParams {
   email: string;
@@ -57,6 +64,8 @@ export class CognitoAuthService {
    * Sign up a new user
    */
   static async signUp(params: SignUpParams) {
+    configureAmplify();
+    
     try {
       const { email, password, firstName, lastName, userType, companyName, companiesHouseNumber } = params;
       
@@ -101,6 +110,8 @@ export class CognitoAuthService {
    * Confirm sign up with verification code
    */
   static async confirmSignUp(email: string, confirmationCode: string) {
+    configureAmplify();
+    
     try {
       await confirmSignUp({
         username: email,
@@ -140,6 +151,8 @@ export class CognitoAuthService {
    * Sign in user
    */
   static async signIn(params: SignInParams) {
+    configureAmplify();
+    
     try {
       const { email, password } = params;
       
@@ -182,6 +195,8 @@ export class CognitoAuthService {
    * Get current authenticated user
    */
   static async getCurrentUser() {
+    configureAmplify();
+    
     try {
       const user = await getCurrentUser();
       return {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Contract, UserType } from '../../../lib/types';
 import { contractService } from '../../../lib/services/contractService';
@@ -17,16 +17,7 @@ export default function ContractPage() {
 
   const contractId = params.contractId as string;
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/login');
-      return;
-    }
-
-    loadContract();
-  }, [contractId, user]);
-
-  const loadContract = async () => {
+  const loadContract = useCallback(async () => {
     try {
       setIsLoading(true);
       const contractData = await contractService.getContract(contractId);
@@ -49,13 +40,22 @@ export default function ContractPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [contractId, user]);
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+
+    loadContract();
+  }, [user, router, loadContract]);
 
   const handleStatusUpdate = (status: string) => {
     if (contract) {
       setContract({
         ...contract,
-        status: status as any,
+        status: status as Contract['status'],
         updatedAt: new Date()
       });
     }
